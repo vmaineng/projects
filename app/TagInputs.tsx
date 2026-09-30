@@ -18,19 +18,42 @@ export default function TagInput({
 
   const isMaxed = tags.length >= maxTags;
 
+  function updateTags(newTags: string[]) {
+    setTags(newTags);
+    if (onChange) {
+      onChange(newTags);
+    }
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key !== "Enter" || isMaxed) return;
-
-    if (inputValue.trim() === "") return;
-
-    if (tags.includes(inputValue.trim())) {
-      setInputvalue("");
+    if (e.key === "Backspace") {
+      if (inputValue === "" && tags.length > 0) {
+        const newTags = tags.slice(0, -1);
+        updateTags(newTags);
+      }
       return;
     }
 
-    const newTags = [...tags, inputValue.trim()];
-    setTags(newTags);
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+
+    if (isMaxed) return;
+
+    const trimmed = inputValue.trim();
+    if (trimmed === "" || tags.includes(trimmed)) return;
+
+    const isDuplicate = tags.some(
+      (tag) => tag.toLowerCase() === trimmed.toLowerCase(),
+    );
+    if (isDuplicate) return;
+
+    updateTags([...tags, trimmed]);
     setInputvalue("");
+  }
+
+  function removeTag(tagToRemove: string) {
+    const newTags = tags.filter((tag) => tag !== tagToRemove);
+    updateTags(newTags);
   }
 
   return (
@@ -40,6 +63,7 @@ export default function TagInput({
           value={inputValue}
           type="text"
           onChange={(e) => setInputvalue(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder={isMaxed ? "Max tags reached" : "Add a tag"}
           disabled={isMaxed}
         />
@@ -49,7 +73,13 @@ export default function TagInput({
           {tags.map((tag) => (
             <li key={tag}>
               {tag}
-              <button type="button" aria-label={`Remove ${tag}`}>
+              <button
+                type="button"
+                aria-label={`Remove ${tag}`}
+                onClick={() => {
+                  removeTag(tag);
+                }}
+              >
                 x
               </button>
             </li>
