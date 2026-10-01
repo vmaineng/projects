@@ -17,16 +17,21 @@ export default function Counter({
 }: CounterProps) {
   const [count, setCount] = useState<number>(initialValue);
 
+  function updateCount(newValue: number) {
+    setCount(newValue);
+    onChange?.(newValue);
+  }
+
   function increment() {
-    setCount((prev) => (prev += 1));
+    updateCount(count + 1);
   }
 
   function decrement() {
-    setCount((prev) => (prev -= 1));
+    updateCount(count - 1);
   }
 
   function reset() {
-    setCount(initialValue);
+    updateCount(initialValue);
   }
 
   const isMaxed = count >= max;
@@ -44,6 +49,8 @@ export default function Counter({
       <button type="button" onClick={reset}>
         Reset
       </button>
+      {isMaxed && <p>Maximum value reached</p>}
+      {isMin && <p>Minimum value reached</p>}
     </div>
   );
 }
